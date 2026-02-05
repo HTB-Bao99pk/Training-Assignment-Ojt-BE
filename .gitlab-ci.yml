@@ -1,0 +1,39 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+# JOB 1: BUILD VÀ ĐÓNG GÓI ZIP
+build_job:
+  image: maven:3.9-eclipse-temurin-21
+  stage: build
+  script:
+    - echo "Bắt đầu build..."
+    - mvn clean package -DskipTests
+    #1.Đổi tên file jar dài ngoằng thành app.jar cho chuẩn
+    - mv target/*.jar target/app.jar
+    # 2. Dùng lệnh jar (có sẵn trong JDK) để nén file app.jar vào trong deploy.zip
+    # -c: create, -M: no manifest, -f: file name
+    - cd target && jar -cMf deploy.zip app.jar
+  artifacts:
+    paths:
+      # Lưu lại file zip để job sau dùng
+      - target/deploy.zip
+
+# JOB 2: DEPLOY FILE ZIP
+deploy_job:
+  stage: deploy
+  image: curlimages/curl:latest
+  script:
+    - echo "Đang deploy lên app $AZURE_APP_NAME..."
+    - ls -l target/deploy.zip
+    # Gửi file deploy.zip (chứa app.jar bên trong) lên Azure
+    - curl -X POST -u "$AZURE_USER:$AZURE_PASSWORD" --data-binary @target/deploy.zip https://electronics-store-team4-gua8ggfze0awared.scm.malaysiawest-01.azurewebsites.net/api/zipdeploy
+  only:
+    - main
