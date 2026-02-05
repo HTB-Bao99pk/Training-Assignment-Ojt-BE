@@ -82,7 +82,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "https://electronics-store-team4.vercel.app"
+                "https://electronics-store-team4.vercel.app",
+                "https://training-assignment-ojt-fe.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
